@@ -4,27 +4,73 @@ require 'conexion.php';
 $mensaje = "";
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $nombre = mysqli_real_escape_string($conn, $_POST['nombre']);
-    $email  = mysqli_real_escape_string($conn, $_POST['email']);
-    $pass   = $_POST['pass'];
 
-    $checkEmail = mysqli_query($conn, "SELECT id_usuario FROM usuarios WHERE email = '$email'");
-    
-    if (mysqli_num_rows($checkEmail) > 0) {
-        $mensaje = '<div class="alert alert-danger py-2 small"><i class="bi bi-exclamation-triangle-fill me-2"></i>Este email ya existe.</div>';
+    $errores = [];
+
+    // Limpiar datos
+    $nombre = trim($_POST['nombre'] ?? '');
+    $email  = trim($_POST['email'] ?? '');
+    $pass   = $_POST['pass'] ?? '';
+
+    // Validaciones
+    if (empty($nombre)) {
+        $errores[] = "El nombre es obligatorio";
+    } elseif (strlen($nombre) < 3) {
+        $errores[] = "El nombre debe tener al menos 3 caracteres";
+    }
+
+    if (empty($email)) {
+        $errores[] = "El email es obligatorio";
+    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $errores[] = "El email no es válido";
+    }
+
+    if (empty($pass)) {
+        $errores[] = "La contraseña es obligatoria";
+    } elseif (strlen($pass) < 4) {
+        $errores[] = "La contraseña debe tener mínimo 4 caracteres";
+    }
+
+    // Si hay errores
+    if (!empty($errores)) {
+        $mensaje = '<div class="alert alert-danger py-2 small">';
+        foreach ($errores as $error) {
+            $mensaje .= '<div><i class="bi bi-exclamation-triangle-fill me-2"></i>' . $error . '</div>';
+        }
+        $mensaje .= '</div>';
     } else {
-        $sql_registro = "INSERT INTO usuarios (nombre, email, password, rol) 
-                         VALUES('$nombre', '$email', MD5('$pass'), 'cliente')";
 
-        if (mysqli_query($conn, $sql_registro)) {
-            $mensaje = '<div class="alert alert-success py-2 small"><i class="bi bi-check-circle-fill me-2"></i>¡Éxito! <a href="login.php" class="alert-link text-dark">Inicia sesión aquí</a></div>';
+        // Escapar datos
+        $nombre = mysqli_real_escape_string($conn, $nombre);
+        $email  = mysqli_real_escape_string($conn, $email);
+
+        // Comprobar email existente
+        $checkEmail = mysqli_query($conn, "SELECT id_usuario FROM usuarios WHERE email = '$email'");
+        
+        if (mysqli_num_rows($checkEmail) > 0) {
+            $mensaje = '<div class="alert alert-danger py-2 small">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>Este email ya existe.</div>';
         } else {
-            $mensaje = '<div class="alert alert-danger py-2 small">Error: ' . mysqli_error($conn) . '</div>';
+
+            // Hash seguro de contraseña
+            $passwordHash = password_hash($pass, PASSWORD_DEFAULT);
+
+            $sql_registro = "INSERT INTO usuarios (nombre, email, password, rol) 
+                             VALUES('$nombre', '$email', '$passwordHash', 'cliente')";
+
+            if (mysqli_query($conn, $sql_registro)) {
+                $mensaje = '<div class="alert alert-success py-2 small">
+                <i class="bi bi-check-circle-fill me-2"></i>¡Éxito! 
+                <a href="login.php" class="alert-link text-dark">Inicia sesión aquí</a></div>';
+            } else {
+                $mensaje = '<div class="alert alert-danger py-2 small">
+                Error: ' . mysqli_error($conn) . '</div>';
+            }
         }
     }
 }
 
-// Incluimos el header que ya tiene los estilos corregidos
+// Incluimos el header
 include 'header.php'; 
 ?>
 
@@ -84,6 +130,5 @@ include 'header.php';
 </div>
 
 <?php 
-// Incluimos el footer corregido
 include 'footer.php'; 
 ?>
