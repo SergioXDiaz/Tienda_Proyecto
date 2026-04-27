@@ -2,10 +2,10 @@
 // conexion.php
 
 // 1. Credenciales de la base de datos
-$servidor   = "localhost";
-$usuario    = "root";
-$password   = "";
-$base_datos = "tienda_proyecto";
+$servidor   = "sql101.infinityfree.com";
+$usuario    = "if0_41744491";
+$password   = "9hDOB2R2TctZP ";
+$base_datos = "if0_41744491_tienda_proyecto";
 
 // 2. Crear la conexión usando la extensión mysqli
 $conn = mysqli_connect($servidor, $usuario, $password, $base_datos);
