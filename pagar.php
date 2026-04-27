@@ -1,7 +1,7 @@
 <?php
 session_start();
 require 'conexion.php';
-require 'vendor/autoload.php';
+require __DIR__ . '/vendor/autoload.php'; // <- así apunta correctamente;
 
 // Configurar Stripe
 \Stripe\Stripe::setApiKey('sk_test_STRIPE_SECRET');
@@ -38,8 +38,8 @@ $session = \Stripe\Checkout\Session::create([
     'payment_method_types' => ['card'],
     'line_items' => $line_items,
     'mode' => 'payment',
-    'success_url' => 'http://localhost/tu_proyecto/success.php',
-    'cancel_url' => 'http://localhost/tu_proyecto/cancel.php',
+    'success_url' => 'https://angelinas.infinityfree.me/success.php',
+    'cancel_url'  => 'https://angelinas.infinityfree.me/cancel.php',
 ]);
 
 // Redirigir a Stripe

@@ -7,13 +7,12 @@ require 'conexion.php';
 // 1. Añadir producto (o sumar cantidad si ya existe)
 if (isset($_GET['id'])) {
     $id = intval($_GET['id']);
-    // Si no existe el carrito, lo creamos como array asociativo
     if (!isset($_SESSION['carrito'])) { $_SESSION['carrito'] = array(); }
 
     if (isset($_SESSION['carrito'][$id])) {
-        $_SESSION['carrito'][$id]++; // Si ya estaba, sumamos uno
+        $_SESSION['carrito'][$id]++;
     } else {
-        $_SESSION['carrito'][$id] = 1; // Si es nuevo, empezamos en 1
+        $_SESSION['carrito'][$id] = 1;
     }
     header("Location: carrito.php"); exit;
 }
@@ -87,10 +86,11 @@ include 'navbar.php';
                             </td>
                             <td style="width: 120px;">
                                 <input type="number" name="cantidades[<?php echo $id; ?>]" value="<?php echo $cantidad; ?>" 
-                                       class="form-control bg-dark text-white border-secondary text-center shadow-none" min="1">
+                                       class="form-control bg-dark text-white border-secondary text-center shadow-none cantidad-input"
+                                       min="1" data-precio="<?php echo $p['precio']; ?>">
                             </td>
                             <td class="text-center text-muted-gold"><?php echo $p['precio']; ?>€</td>
-                            <td class="text-center text-gold fw-bold"><?php echo number_format($subtotal, 2); ?>€</td>
+                            <td class="text-center text-gold fw-bold subtotal"><?php echo number_format($subtotal, 2); ?>€</td>
                             <td class="text-center">
                                 <a href="carrito.php?eliminar=<?php echo $id; ?>" class="btn btn-sm btn-outline-danger">
                                     <i class="bi bi-trash"></i>
@@ -102,7 +102,7 @@ include 'navbar.php';
                     <tfoot>
                         <tr style="background: rgba(212, 175, 55, 0.1);">
                             <td colspan="3" class="text-end fw-bold fs-5 py-4 text-white">TOTAL A PAGAR:</td>
-                            <td class="text-center fw-bold fs-3 text-gold py-4"><?php echo number_format($total, 2); ?>€</td>
+                            <td class="text-center fw-bold fs-3 text-gold py-4" id="total-carrito"><?php echo number_format($total, 2); ?>€</td>
                             <td></td>
                         </tr>
                     </tfoot>
@@ -121,5 +121,28 @@ include 'navbar.php';
         </form>
     <?php endif; ?>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const cantidadInputs = document.querySelectorAll('.cantidad-input');
+    const totalCarrito = document.getElementById('total-carrito');
+
+    function actualizarSubtotalYTotal() {
+        let total = 0;
+        cantidadInputs.forEach(input => {
+            const cantidad = parseInt(input.value);
+            const precio = parseFloat(input.dataset.precio);
+            const subtotal = cantidad * precio;
+            input.closest('tr').querySelector('.subtotal').textContent = subtotal.toFixed(2) + '€';
+            total += subtotal;
+        });
+        totalCarrito.textContent = total.toFixed(2) + '€';
+    }
+
+    cantidadInputs.forEach(input => {
+        input.addEventListener('input', actualizarSubtotalYTotal);
+    });
+});
+</script>
 
 <?php include 'footer.php'; ?>
