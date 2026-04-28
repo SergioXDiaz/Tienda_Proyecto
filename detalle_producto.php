@@ -163,4 +163,3 @@ h1{font-size:1.8rem;} h2{font-size:1.5rem;} h3{font-size:1.3rem;}
 </div>
 
 <?php include 'footer.php'; ?>
-```
