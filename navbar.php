@@ -13,7 +13,7 @@
                 <input type="text" name="buscar" class="search-input" placeholder="¿Qué estás buscando?">
                 
                 <select name="cat" class="search-select">
-                    <option value="">Categorías</option>
+                    <option value="" selected hidden>Categorías</option>
                     <?php
                     $res_c = mysqli_query($conn, "SELECT * FROM categorias");
                     while($c = mysqli_fetch_assoc($res_c)) {
@@ -28,8 +28,11 @@
             </form>
 
             <ul class="navbar-nav ms-auto align-items-center">
-                <li class="nav-item"><a class="nav-link text-white" href="index.php">Inicio</a></li>
                 <li class="nav-item"><a class="nav-link text-white" href="catalogo.php">Catálogo</a></li>
+                
+                <li class="nav-item">
+                    <a class="nav-link text-white" href="contacto.php">Contacto</a>
+                </li>
                 
                 <li class="nav-item ms-lg-3">
                     <a href="carrito.php" class="text-gold position-relative me-3">
@@ -43,8 +46,20 @@
                 </li>
 
                 <?php if(isset($_SESSION['nombre'])): ?>
-                    <li class="nav-item dropdown ms-lg-2">
-                        <span class="text-gold fw-bold">Hola, <?= htmlspecialchars($_SESSION['nombre']) ?></span>
+                    <li class="nav-item dropdown ms-lg-2 d-flex align-items-center">
+                        <span class="text-gold fw-bold small">Hola, <?= htmlspecialchars($_SESSION['nombre']) ?></span>
+                        
+                        <!-- Botón Panel SOLO para admin o gestor (AHORA MÁS VISIBLE) -->
+                        <?php if($_SESSION['rol'] == 'admin'): ?>
+                            <a href="panel_admin.php" class="btn btn-gold btn-sm ms-2" style="font-size: 0.7rem; padding: 3px 10px;">
+                                <i class="bi bi-speedometer2"></i> Panel
+                            </a>
+                        <?php elseif($_SESSION['rol'] == 'gestor'): ?>
+                            <a href="gestion_pedidos.php" class="btn btn-gold btn-sm ms-2" style="font-size: 0.7rem; padding: 3px 10px;">
+                                <i class="bi bi-speedometer2"></i> Panel
+                            </a>
+                        <?php endif; ?>
+                        
                         <a href="logout.php" class="btn btn-outline-danger btn-sm ms-2" style="font-size: 0.7rem;">Salir</a>
                     </li>
                 <?php else: ?>

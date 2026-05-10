@@ -11,8 +11,21 @@ $banners_disenados = [
 ];
 
 // 2. Consultas
+
+// Ofertas: Se queda como está por ahora según tu petición
 $res_ofertas = mysqli_query($conn, "SELECT * FROM productos WHERE en_oferta = 1 LIMIT 4");
-$res_destacados = mysqli_query($conn, "SELECT * FROM productos ORDER BY id_producto DESC LIMIT 4");
+
+// DESTACADOS: Ahora busca la media de puntuación en la tabla 'valoraciones'
+// Usamos un LEFT JOIN para que si no hay suficientes valoraciones, sigan saliendo productos
+$query_destacados = "
+    SELECT p.*, AVG(v.puntuacion) as media_puntos 
+    FROM productos p 
+    LEFT JOIN valoraciones v ON p.id_producto = v.id_producto 
+    GROUP BY p.id_producto 
+    ORDER BY media_puntos DESC, p.id_producto DESC 
+    LIMIT 4";
+
+$res_destacados = mysqli_query($conn, $query_destacados);
 
 // IMPORTANTE: Incluimos los componentes
 include 'header.php'; 

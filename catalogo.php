@@ -2,18 +2,44 @@
 session_start();
 require 'conexion.php';
 
-// 1. Lógica de Filtrado y Búsqueda
+// 1. Lógica de Filtrado y Búsqueda Ampliada
 $where = " WHERE 1=1 ";
+
+// Filtro por Categoría
 if (isset($_GET['cat']) && !empty($_GET['cat'])) {
     $cat = mysqli_real_escape_string($conn, $_GET['cat']);
     $where .= " AND p.id_categoria = '$cat' ";
 }
+
+// Filtro por Buscador "Inteligente"
 if (isset($_GET['buscar']) && !empty($_GET['buscar'])) {
     $buscar = mysqli_real_escape_string($conn, $_GET['buscar']);
-    $where .= " AND p.nombre LIKE '%$buscar%' ";
+    $buscar_low = mb_strtolower($buscar); // Pasamos a minúsculas para comparar mejor
+    
+    // Definimos términos relacionados (sinónimos manuales)
+    $extra_sql = "";
+    
+    if (strpos($buscar_low, 'ordenador') !== false || strpos($buscar_low, 'pc') !== false || strpos($buscar_low, 'computadora') !== false) {
+        $extra_sql = " OR c.nombre_categoria LIKE '%Informática%' OR p.nombre LIKE '%Portátil%' OR p.nombre LIKE '%Tablet%'";
+    }
+    elseif (strpos($buscar_low, 'comida') !== false || strpos($buscar_low, 'pienso') !== false || strpos($buscar_low, 'alimento') !== false) {
+        $extra_sql = " OR c.nombre_categoria LIKE '%Mascotas%' OR p.nombre LIKE '%Yerbero%'";
+    }
+    elseif (strpos($buscar_low, 'zapatilla') !== false || strpos($buscar_low, 'tenis') !== false || strpos($buscar_low, 'deporte') !== false) {
+        $extra_sql = " OR c.nombre_categoria LIKE '%Deportes%' OR p.nombre LIKE '%Nike%' OR p.nombre LIKE '%Pegasus%'";
+    }
+    elseif (strpos($buscar_low, 'reloj') !== false || strpos($buscar_low, 'smartwatch') !== false) {
+        $extra_sql = " OR p.nombre LIKE '%Apple Watch%' OR p.nombre LIKE '%Series 9%'";
+    }
+
+    // Aplicamos la búsqueda en Nombre, Descripción, Categoría y los extras definidos arriba
+    $where .= " AND (p.nombre LIKE '%$buscar%' 
+                OR p.descripcion LIKE '%$buscar%' 
+                OR c.nombre_categoria LIKE '%$buscar%' 
+                $extra_sql) ";
 }
 
-// 2. Consulta con filtros aplicados
+// 2. Consulta con filtros aplicados (Usamos JOIN para poder buscar en el nombre de la categoría)
 $sql = "SELECT p.*, c.nombre_categoria 
         FROM productos p 
         LEFT JOIN categorias c ON p.id_categoria = c.id_categoria 
